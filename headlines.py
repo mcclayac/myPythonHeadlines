@@ -7,6 +7,7 @@ __revision_date__ = '$'
 import feedparser
 from flask import Flask
 from flask import render_template
+from flask import request
 
 app = Flask(__name__)
 
@@ -25,6 +26,16 @@ RSS_FEEDS = {'bbc': 'http://feeds.bbci.co.uk/news/rss.xml',
              'aws': 'http://feeds.feedburner.com/AmazonWebServicesBlog'}
 
 @app.route("/")
+def get_news():
+    query = request.args.get("publication");
+    if not query or query.lower() not in RSS_FEEDS:
+        publication = "bbc"
+    else:
+        publication = query.lower()
+    feed = feedparser.parse(RSS_FEEDS[publication]);
+    return render_template("home.html",
+                           articles=feed['entries']);
+
 
 @app.route("/<publication>")
 def get_publication(publication="bbc"):
@@ -68,18 +79,18 @@ def get_news2(publication):
 
 
 
-def get_news():
-    feed = feedparser.parse(BBC_FEED)
-    first_article = feed['entries'][0]
-    return """<html>
-        <body>
-            <h1> BBC Headlines </h1>
-            <b>{0}</b> <br/>
-            <i>{1}</i> <br/>
-            <p>{2}</p> <br/>
-        </body>
-    </html>
-    """.format(first_article.get("title"), first_article.get("published"),first_article.get("summary"))
+# def get_news():
+#     feed = feedparser.parse(BBC_FEED)
+#     first_article = feed['entries'][0]
+#     return """<html>
+#         <body>
+#             <h1> BBC Headlines </h1>
+#             <b>{0}</b> <br/>
+#             <i>{1}</i> <br/>
+#             <p>{2}</p> <br/>
+#         </body>
+#     </html>
+#     """.format(first_article.get("title"), first_article.get("published"),first_article.get("summary"))
 
 
 if __name__ == '__main__':
